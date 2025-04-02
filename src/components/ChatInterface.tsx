@@ -1,8 +1,10 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { BillReminder } from "@/components/BillReminder";
 
 type Message = {
   id: string;
@@ -20,6 +22,7 @@ export const ChatInterface = () => {
     }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showBillReminder, setShowBillReminder] = useState(true);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -116,6 +119,8 @@ export const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full">
+      {showBillReminder && <BillReminder />}
+      
       <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           {messages.map((message) => (
