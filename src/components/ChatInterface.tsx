@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,11 +67,11 @@ export const ChatInterface = () => {
       // Save message to Supabase if authenticated
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Store in todos as a temporary solution until we create a messages table
-        await supabase.from('todos').insert({
+        // Now using the new messages table
+        await supabase.from('messages').insert({
           user_id: user.id,
-          title: `Chat: ${userMessage.role}`,
-          description: userMessage.content
+          content: userMessage.content,
+          role: userMessage.role
         });
       }
     } catch (error) {
@@ -173,11 +174,11 @@ export const ChatInterface = () => {
           // Save response to Supabase if authenticated
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
-            // Store in todos as a temporary solution until we create a messages table
-            await supabase.from('todos').insert({
+            // Now using the new messages table
+            await supabase.from('messages').insert({
               user_id: user.id,
-              title: `Chat: ${response.role}`,
-              description: response.content
+              content: response.content,
+              role: response.role
             });
           }
         } catch (error) {
