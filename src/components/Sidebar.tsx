@@ -1,7 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command, Brain, Zap, Lightbulb } from "lucide-react";
+import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command, Brain, Zap, Lightbulb, Gamepad2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom";
 
 interface SidebarProps {
   onClose: () => void;
@@ -36,6 +37,30 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
             to empower your unique cognitive journey.
           </p>
         </div>
+      </div>
+
+      <Separator className="my-4" />
+      
+      <div className="space-y-1 mb-4">
+        <h3 className="font-medium text-sm text-sidebar-foreground/70 px-2 mb-2">Navigation</h3>
+        <Link to="/">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Chat Assistant
+          </Button>
+        </Link>
+        <Link to="/games">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            <Gamepad2 className="h-4 w-4 mr-2" />
+            Interactive Games
+          </Button>
+        </Link>
       </div>
 
       <Separator className="my-4" />
