@@ -20,7 +20,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
   return (
     <div className="h-full flex flex-col p-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-sidebar-foreground">Bridge-IT</h2>
+        <h2 className="text-xl font-bold text-sidebar-foreground">Bridge.it</h2>
         <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
           <X className="h-5 w-5" />
         </Button>
@@ -30,7 +30,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
         <div className="flex items-start gap-2 text-sidebar-accent-foreground">
           <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
           <p className="text-sm">
-            I'm Tracy, your AI companion for overcoming procrastination and building productive habits. 
+            I'm Bridge, your AI companion for overcoming procrastination and building productive habits. 
             I'm here to help you navigate challenges with focus, time management, and goal achievement.
           </p>
         </div>
@@ -72,3 +72,4 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     </div>
   );
 };
+

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,7 @@ export const ChatInterface = () => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi there! 👋 I'm Tracy, your AI coach and thoughtful friend, here to help you overcome procrastination and boost your productivity. I understand the unique challenges that come with ADHD and I'm here to support you in a way that's understanding and nonjudgmental.\n\nWhat productivity or focus challenges are you facing today? Or type /commands to see what I can help you with!"
+      content: "Hi there! 👋 I'm Bridge, your AI coach and thoughtful friend, here to help you overcome procrastination and boost your productivity. I understand the unique challenges that come with ADHD and I'm here to support you in a way that's understanding and nonjudgmental.\n\nWhat productivity or focus challenges are you facing today? Or type /commands to see what I can help you with!"
     }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -92,8 +91,8 @@ export const ChatInterface = () => {
           "4. Repeat 3 more times\n\n" +
           "How do you feel? Remember, you can use this simple technique anytime you feel resistance to starting a task.";
       } else if (userInput === "/tracy") {
-        response.content = "The Tracy Suite offers specialized AI companions for different needs:\n\n" +
-          "• Tracy Trove Coach (that's me!) - Your productivity and procrastination coach\n" +
+        response.content = "Bridge.it is part of the Tracy Suite that offers specialized AI companions for different needs:\n\n" +
+          "• Bridge.it - Your productivity and procrastination coach\n" +
           "• Tracy Career Coach - For career development and job searching\n" +
           "• Tracy Mindfulness Coach - For stress management and emotional wellbeing\n\n" +
           "You can explore the entire Tracy Suite here: https://chatgpt.com/g/g-67b45f1a14648191ab1cf087c2592edc-the-tracy-suite";
