@@ -1,6 +1,6 @@
 
-import { useEffect, useState } from "react";
-import { AlertTriangle, FileUp, Zap } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { AlertTriangle, FileUp, Zap, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Dialog,
@@ -19,6 +19,9 @@ export function BillReminder() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [urgencyLevel, setUrgencyLevel] = useState(60);
+  const [timeRemaining, setTimeRemaining] = useState(7 * 60); // 7 minutes in seconds
+  const [isFirstReminder, setIsFirstReminder] = useState(true);
+  const timerRef = useRef<number | null>(null);
   const { toast } = useToast();
 
   // Activate sensory feedback - light flashing and vibration
@@ -29,8 +32,13 @@ export function BillReminder() {
     if (open) {
       // Start the vibration if supported
       if ('vibrate' in navigator) {
-        // Vibration pattern: vibrate for 300ms, pause for 100ms, repeat
-        navigator.vibrate([300, 100, 300, 100, 300]);
+        // First reminder: 5 buzzes
+        if (isFirstReminder) {
+          navigator.vibrate([300, 100, 300, 100, 300, 100, 300, 100, 300]);
+        } else {
+          // Second reminder: 7 buzzes (more urgent)
+          navigator.vibrate([300, 100, 300, 100, 300, 100, 300, 100, 300, 100, 300, 100, 300]);
+        }
       }
       
       // Start the light flashing
@@ -54,7 +62,65 @@ export function BillReminder() {
         clearInterval(urgencyInterval);
       };
     }
-  }, [open]);
+  }, [open, isFirstReminder]);
+
+  // Timer effect
+  useEffect(() => {
+    if (open && timeRemaining > 0) {
+      timerRef.current = window.setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Time's up, trigger the next phase
+            if (isFirstReminder) {
+              // Switch to second reminder phase with 5 minutes
+              setIsFirstReminder(false);
+              setUrgencyLevel(85); // Increase urgency
+              
+              // Flash more intensely
+              setIsBuzzing(false);
+              setTimeout(() => setIsBuzzing(true), 50);
+              
+              // Show toast
+              toast({
+                title: "Time's up!",
+                description: "Your situation is becoming critical! Please take action now.",
+                variant: "destructive"
+              });
+              
+              return 5 * 60; // Reset to 5 minutes
+            } else {
+              // Final warning
+              if ('vibrate' in navigator) {
+                // Very long intense vibration for final warning
+                navigator.vibrate([800, 200, 800, 200, 800, 200, 800]);
+              }
+              
+              toast({
+                title: "CRITICAL WARNING!",
+                description: "You are at risk of service disconnection!",
+                variant: "destructive"
+              });
+              
+              return 0;
+            }
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [open, timeRemaining, isFirstReminder, toast]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -88,6 +154,11 @@ export function BillReminder() {
       if ('vibrate' in navigator) {
         navigator.vibrate(0);
       }
+      
+      // Clear timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
     }, 2000);
   };
 
@@ -97,6 +168,11 @@ export function BillReminder() {
     // Stop vibration
     if ('vibrate' in navigator) {
       navigator.vibrate(0);
+    }
+    
+    // Clear timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
     }
     
     // Redirect to a payment page or open payment dialog
@@ -112,9 +188,12 @@ export function BillReminder() {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className={`sm:max-w-md ${isBuzzing ? 'animate-pulse' : ''}`} style={{
-          boxShadow: isBuzzing ? '0 0 15px 5px rgba(255, 0, 0, 0.7)' : 'none',
-        }}>
+        <DialogContent 
+          className={`sm:max-w-md ${isBuzzing ? 'animate-pulse' : ''}`} 
+          style={{
+            boxShadow: isBuzzing ? '0 0 15px 5px rgba(255, 0, 0, 0.7)' : 'none',
+          }}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle className="h-5 w-5" />
@@ -135,6 +214,16 @@ export function BillReminder() {
                 '--progress-background': urgencyLevel > 80 ? 'rgb(220, 38, 38)' : 'rgb(249, 115, 22)',
               } as React.CSSProperties}
             />
+            
+            <div className="flex items-center justify-between mt-3 p-2 border border-orange-200 rounded-md bg-orange-50">
+              <div className="flex items-center gap-2">
+                <Clock className={`h-5 w-5 ${timeRemaining < 60 ? 'text-red-600' : 'text-orange-500'}`} />
+                <span className="text-sm font-medium">Time Remaining:</span>
+              </div>
+              <div className={`font-mono text-lg font-bold ${timeRemaining < 60 ? 'text-red-600 animate-pulse' : 'text-orange-600'}`}>
+                {formatTime(timeRemaining)}
+              </div>
+            </div>
             
             <div className="grid w-full items-center gap-1.5 mt-4">
               <label htmlFor="receipt" className="flex items-center gap-2 text-sm font-medium">
