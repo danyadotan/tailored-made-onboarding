@@ -2,14 +2,25 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Clock, Brain, Calendar, Sparkles, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { BillReminder } from "@/components/BillReminder";
+import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   content: string;
+};
+
+type ADHDProfile = {
+  timePerception: number; // 0-100%, accuracy in estimating time
+  taskInitiation: number; // 0-100%, difficulty in starting tasks
+  sustainedAttention: number; // 0-100%, ability to maintain focus
+  workingMemory: number; // 0-100%, capacity for working memory
+  emotionalRegulation: number; // 0-100%, ability to regulate emotions
+  optimalWorkPeriods: string[]; // Best times of day for productivity
+  commonDistractions: string[]; // Frequent distractions
 };
 
 export const ChatInterface = () => {
@@ -18,11 +29,20 @@ export const ChatInterface = () => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Welcome to Dynamic Bridge: Your Holistic ADHD Growth Partner 🌈\n\nI'm your comprehensive support system, designed to address ADHD challenges through an integrated, compassionate approach. We'll explore cognitive strategies, emotional wellness, and personalized growth techniques.\n\nWhat aspect of your journey would you like to focus on today? Type /commands to discover our holistic support paths."
+      content: "ברוך הבא ל-Bridge-IT: שותף להתמודדות עם ADHD 🌈\n\nאני מערכת תמיכה מקיפה, שנועדה לגשר על פערים קוגניטיביים ולהפחית את התחלואה הנלווית ל-ADHD. אנחנו נעבוד יחד על אסטרטגיות קוגניטיביות, רווחה רגשית, וטכניקות צמיחה מותאמות אישית.\n\nעל איזה היבט בהתמודדות שלך תרצה להתמקד היום? הקלד /commands כדי לגלות את מסלולי התמיכה ההוליסטיים שלנו."
     }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showBillReminder, setShowBillReminder] = useState(true);
+  const [userProfile, setUserProfile] = useState<ADHDProfile>({
+    timePerception: 60,
+    taskInitiation: 50,
+    sustainedAttention: 65,
+    workingMemory: 55,
+    emotionalRegulation: 70,
+    optimalWorkPeriods: ["09:00-11:30", "16:00-18:30"],
+    commonDistractions: ["social media", "email", "noise"]
+  });
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -30,7 +50,7 @@ export const ChatInterface = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
@@ -43,6 +63,20 @@ export const ChatInterface = () => {
     setInput("");
     setIsProcessing(true);
 
+    try {
+      // Save message to Supabase if authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('messages').insert({
+          user_id: user.id,
+          content: userMessage.content,
+          role: 'user'
+        });
+      }
+    } catch (error) {
+      console.error("Error saving message:", error);
+    }
+
     setTimeout(() => {
       let response: Message = {
         id: (Date.now() + 1).toString(),
@@ -53,67 +87,106 @@ export const ChatInterface = () => {
       const userInput = userMessage.content.toLowerCase();
 
       if (userInput === "/commands") {
-        response.content = "Dynamic Bridge Holistic Support Commands:\n\n" +
-          "- /commands – Explore our holistic support paths\n" +
-          "- /start – Begin our comprehensive 8-step neurodivergent growth process\n" +
-          "- /learn – Deep dive into ADHD neuroscience and adaptive strategies\n" +
-          "- /visualize – Create empowering cognitive landscapes\n" +
-          "- /commit – Design personalized growth and wellness goals\n" +
-          "- /mindful – Integrated cognitive and emotional wellness tools\n" +
-          "- /energize – Optimize motivation and personal energy management\n\n" +
-          "Which path resonates with your growth journey today?";
+        response.content = "פקודות תמיכה הוליסטיות ב-Bridge-IT:\n\n" +
+          "- /commands – גלה את מסלולי התמיכה ההוליסטיים שלנו\n" +
+          "- /profile – הצג וערוך את פרופיל ה-ADHD האישי שלך\n" +
+          "- /start – התחל את תהליך הצמיחה הנוירו-דיברגנטי בן 8 השלבים\n" +
+          "- /plan – תכנן יום עם כיול אוטומטי לתפיסת זמן\n" +
+          "- /focus – הפעל מצב ריכוז עם ניטור הסחות בזמן אמת\n" +
+          "- /break – תכנן הפסקות מותאמות אישית למניעת עומס קוגניטיבי\n" +
+          "- /decompose – פרק משימה מורכבת לצעדי מיקרו מותאמים אישית\n" +
+          "- /stats – הצג מדדי התקדמות והשפעה על לחץ וחרדה\n\n" +
+          "איזה מסלול מהדהד עם מסע הצמיחה שלך היום?";
+      } else if (userInput === "/profile") {
+        response.content = "הנה פרופיל ה-ADHD המותאם אישית שלך:\n\n" +
+          "• תפיסת זמן: " + userProfile.timePerception + "% (הערכת זמן מדויקת)\n" +
+          "• התחלת משימות: " + userProfile.taskInitiation + "% (קלות בהתחלת משימות)\n" +
+          "• קשב מתמשך: " + userProfile.sustainedAttention + "% (יכולת לשמור על ריכוז)\n" +
+          "• זיכרון עבודה: " + userProfile.workingMemory + "% (קיבולת זיכרון עבודה)\n" +
+          "• ויסות רגשי: " + userProfile.emotionalRegulation + "% (יכולת לווסת רגשות)\n\n" +
+          "תקופות עבודה אופטימליות: " + userProfile.optimalWorkPeriods.join(", ") + "\n" +
+          "הסחות דעת נפוצות: " + userProfile.commonDistractions.join(", ") + "\n\n" +
+          "פרופיל זה מתעדכן באופן קבוע על בסיס האינטראקציות והמשובים שלך. האם תרצה לעדכן חלק מהמידע?";
       } else if (userInput === "/start") {
-        response.content = "Welcome to your guided journey to overcome procrastination! We'll work through 8 steps together:\n\n" +
-          "1. First, let's assess your current situation. What specific tasks do you find yourself procrastinating on the most?";
-      } else if (userInput === "/learn") {
-        response.content = "Understanding procrastination is the first step to overcoming it! Here's what science tells us:\n\n" +
-          "Procrastination often stems from:\n" +
-          "• Fear of failure or perfectionism\n" +
-          "• Task aversion (finding tasks unpleasant)\n" +
-          "• Poor time perception (common with ADHD)\n" +
-          "• Executive function challenges\n\n" +
-          "Would you like to dive deeper into any of these areas, or learn about effective habit formation techniques?";
-      } else if (userInput === "/visualize") {
-        response.content = "Let's create a mental image of your ideal productive self. Close your eyes for a moment and imagine:\n\n" +
-          "You wake up feeling refreshed and energized. Your morning routine flows smoothly. You sit down to work and find yourself easily focusing on tasks, completing them one by one. Distractions seem less appealing. You feel a sense of accomplishment as you check items off your list.\n\n" +
-          "What does this version of yourself look like? How do they feel? What's different about their environment?";
-      } else if (userInput === "/commit") {
-        response.content = "It's time to set concrete goals that will move you forward! Let's create a structured plan:\n\n" +
-          "1. What's ONE specific goal you want to achieve in the next week?\n" +
-          "2. What are three small steps you can take toward this goal?\n" +
-          "3. What potential obstacles might come up, and how will you handle them?\n" +
-          "4. How will you track your progress and hold yourself accountable?";
-      } else if (userInput === "/relax") {
-        response.content = "When we're stressed or overwhelmed, procrastination often increases. Let's practice a quick relaxation technique:\n\n" +
-          "1. Take a deep breath in through your nose for 4 counts\n" +
-          "2. Hold for 2 counts\n" +
-          "3. Exhale slowly through your mouth for 6 counts\n" +
-          "4. Repeat 3 more times\n\n" +
-          "How do you feel? Remember, you can use this simple technique anytime you feel resistance to starting a task.";
-      } else if (userInput === "/tracy") {
-        response.content = "Bridge.it is part of the Dynamic Bridge ADHD program, offering specialized support:\n\n" +
-          "• Bridge.it - Productivity and procrastination coaching\n" +
-          "• Other Dynamic Bridge tools - Career development, mindfulness, and emotional wellbeing\n\n" +
-          "Learn more about the Dynamic Bridge program at: https://dynamicbridge.com";
+        response.content = "ברוכים הבאים למסע המודרך להתגברות על דחיינות! נעבוד יחד דרך 8 שלבים:\n\n" +
+          "1. ראשית, בוא נעריך את המצב הנוכחי שלך. אילו משימות ספציפיות אתה מוצא את עצמך דוחה הכי הרבה?\n\n" +
+          "בהתבסס על פרופיל ה-ADHD שלך, אני רואה שהתחלת משימות היא אתגר עבורך (ציון " + userProfile.taskInitiation + "%). אשתמש בטכניקות מיקרו-התחלה מותאמות אישית לעזור לך להתגבר על נקודות החסימה האלה.";
+      } else if (userInput === "/plan") {
+        response.content = "הבה נתכנן את יומך עם התחשבות בדפוס תפיסת הזמן האישי שלך:\n\n" +
+          "בהתבסס על דפוסים קודמים, אני מזהה שאתה נוטה להעריך בחסר את משך המשימות בכ-40%. הנה לוח זמנים מכויל:\n\n" +
+          "• 09:00-10:30: עבודה על פרויקט X (90 דקות במקום הערכתך המקורית של 60 דקות)\n" +
+          "• 10:30-10:45: הפסקה (15 דקות)\n" +
+          "• 10:45-12:15: פגישות (90 דקות כולל זמני מעבר)\n" +
+          "• 12:15-13:00: ארוחת צהריים (45 דקות במקום 30)\n" +
+          "• 13:00-14:30: משימות מנהלתיות (90 דקות במקום 60)\n\n" +
+          "האם תרצה לבצע התאמות ללוח זמנים זה?";
+      } else if (userInput === "/focus") {
+        response.content = "מצב מיקוד מופעל! בהתבסס על הפרופיל שלך, מצאתי שאתה עובד הכי טוב בבלוקים של 60-90 דקות עם הפסקות קצרות.\n\n" +
+          "אני כעת מנטר הסחות דעת שכיחות ואציע התערבויות בזמן אמת. הייתי רוצה להתמקד במשימה הנוכחית שלך - מה אתה מנסה להשלים כרגע?\n\n" +
+          "🔍 נתוני מיקוד נוכחיים:\n• הסחות זוהו היום: 7\n• התערבויות מוצלחות: 5\n• זמן מיקוד רציף הארוך ביותר: 63 דקות";
+      } else if (userInput === "/decompose") {
+        response.content = "בוא נפרק משימה מורכבת לצעדי מיקרו! איזו משימה תרצה לפרק?\n\n" +
+          "בהתבסס על פרופיל ADHD שלך, אני מזהה שאתה מתמודד הכי טוב עם צעדים בגודל של 15-25 דקות עם הגדרה ברורה.\n\n" +
+          "לדוגמה, אם המשימה היא 'כתיבת הצעת מחקר', נוכל לפרק אותה כך:\n" +
+          "1. עיון במידע בסיסי (20 דקות)\n" +
+          "2. סיעור מוחות של 3 נקודות מרכזיות (15 דקות)\n" +
+          "3. כתיבת פסקת פתיחה (20 דקות)\n" +
+          "4. פירוט נקודה ראשונה (25 דקות)\n\n" +
+          "אשמח לעזור לך לפרק כל משימה שתבחר!";
+      } else if (userInput === "/stats") {
+        response.content = "הנה מדדי ההתקדמות וההשפעה שלך:\n\n" +
+          "📉 מדדי לחץ וחרדה:\n" +
+          "• ירידה של 32% באירועי לחץ יומיים בחודש האחרון\n" +
+          "• ירידה של 27% בדיווח עצמי על תחושות חרדה\n\n" +
+          "📈 שיפור בתפקוד:\n" +
+          "• עלייה של 41% בהשלמת משימות בזמן\n" +
+          "• ירידה של 53% בדחיינות במשימות מורכבות\n" +
+          "• שיפור של 38% בזמני מעבר בין משימות\n\n" +
+          "🎯 השפעה על יעדים אישיים:\n" +
+          "• התקדמות של 65% לעבר היעד 'השלמת פרויקט X'\n" +
+          "• התקדמות של 42% לעבר היעד 'פיתוח שגרת עבודה יציבה'";
+      } else if (userInput === "/break") {
+        response.content = "הנה המלצות להפסקה מותאמת אישית על בסיס הפרופיל שלך:\n\n" +
+          "רמת העומס הקוגניטיבי הנוכחית שלך נראית בינונית-גבוהה. על סמך הדפוסים שלך, אני ממליץ על:\n\n" +
+          "• הפסקה פעילה של 12-15 דקות\n" +
+          "• כוללת תנועה קלה (הליכה קצרה או מתיחות)\n" +
+          "• ללא מסכים או גירויים חזותיים מורכבים\n" +
+          "• שתיית מים והאזנה למוזיקה אינסטרומנטלית\n\n" +
+          "הפסקה זו מותאמת למצב הקוגניטיבי הנוכחי שלך. האם תרצה להפעיל טיימר להפסקה זו?";
       } else {
-        response.content = "Thank you for sharing that with me. Understanding your unique situation helps me provide better support.\n\n" +
-          "Would you like to:\n" +
-          "1. Explore specific strategies to overcome this challenge?\n" +
-          "2. Learn more about the psychology behind it?\n" +
-          "3. Start our structured 8-step process (type /start)?\n\n" +
-          "Remember, I'm here to help in whatever way works best for you.";
+        response.content = "תודה על השיתוף. הבנת המצב הייחודי שלך עוזרת לי לספק תמיכה טובה יותר.\n\n" +
+          "בהתבסס על פרופיל ה-ADHD שלך, אני רואה שיש לך חוזקות ב" + (userProfile.emotionalRegulation > 65 ? "ויסות רגשי" : userProfile.timePerception > 65 ? "תפיסת זמן" : "קשב מתמשך") + " ואתגרים ב" + (userProfile.taskInitiation < 60 ? "התחלת משימות" : userProfile.workingMemory < 60 ? "זיכרון עבודה" : "תפיסת זמן") + ".\n\n" +
+          "האם תרצה:\n" +
+          "1. לחקור אסטרטגיות ספציפיות להתגברות על אתגר זה?\n" +
+          "2. ללמוד עוד על הפסיכולוגיה שמאחוריו?\n" +
+          "3. להתחיל את התהליך המובנה בן 8 השלבים שלנו (הקלד /start)?\n\n" +
+          "זכור, אני כאן כדי לגשר על הפערים הקוגניטיביים, לא כדי 'לתקן' אותך. המוח שלך הוא ייחודי, ואנחנו נעבוד יחד למצוא את הדרכים הטובות ביותר עבורך.";
       }
 
       setMessages((prev) => [...prev, response]);
       setIsProcessing(false);
+      
+      try {
+        // Save response to Supabase if authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from('messages').insert({
+            user_id: user.id,
+            content: response.content,
+            role: 'assistant'
+          });
+        }
+      } catch (error) {
+        console.error("Error saving response:", error);
+      }
     }, 1500);
   };
 
   const handleCommandClick = (command: string) => {
     setInput(command);
     toast({
-      title: "Command selected",
-      description: `Type or press Enter to submit "${command}"`,
+      title: "פקודה נבחרה",
+      description: `הקלד או לחץ Enter כדי לשלוח "${command}"`,
     });
   };
 
@@ -121,7 +194,7 @@ export const ChatInterface = () => {
     <div className="flex flex-col h-full">
       {showBillReminder && <BillReminder />}
       
-      <div className="flex-1 overflow-auto p-4 md:p-6">
+      <div className="flex-1 overflow-auto p-4 md:p-6 bg-gradient-to-b from-background to-background/80">
         <div className="max-w-4xl mx-auto">
           {messages.map((message) => (
             <div
@@ -147,18 +220,25 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      <div className="px-4 md:px-6 py-2 bg-accent/10">
+      <div className="px-4 md:px-6 py-3 bg-accent/20 border-t border-accent/30">
         <div className="max-w-4xl mx-auto flex flex-wrap gap-2">
-          <span className="text-xs text-muted-foreground pt-1.5">Quick commands:</span>
-          {["/start", "/learn", "/visualize", "/commit", "/relax"].map((cmd) => (
+          <span className="text-xs text-muted-foreground pt-1.5">פקודות מהירות:</span>
+          {[
+            { cmd: "/profile", icon: <Brain className="h-3.5 w-3.5 mr-1" /> },
+            { cmd: "/plan", icon: <Calendar className="h-3.5 w-3.5 mr-1" /> },
+            { cmd: "/focus", icon: <Target className="h-3.5 w-3.5 mr-1" /> },
+            { cmd: "/decompose", icon: <Sparkles className="h-3.5 w-3.5 mr-1" /> },
+            { cmd: "/break", icon: <Clock className="h-3.5 w-3.5 mr-1" /> },
+          ].map((item) => (
             <Button
-              key={cmd}
+              key={item.cmd}
               variant="outline"
               size="sm"
-              className="bg-background/50 text-xs font-mono"
-              onClick={() => handleCommandClick(cmd)}
+              className="bg-background/70 text-xs font-mono flex items-center"
+              onClick={() => handleCommandClick(item.cmd)}
             >
-              {cmd}
+              {item.icon}
+              {item.cmd}
             </Button>
           ))}
         </div>
@@ -170,8 +250,9 @@ export const ChatInterface = () => {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Type a message or command..."
+              placeholder="הקלד הודעה או פקודה..."
               className="flex-1"
+              dir="rtl"
               disabled={isProcessing}
             />
             <Button type="submit" disabled={isProcessing}>
