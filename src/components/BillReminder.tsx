@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useRef } from "react";
-import { AlertTriangle, FileUp, Zap, Clock } from "lucide-react";
+import { AlertTriangle, FileUp, Zap, Clock, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Dialog,
@@ -18,87 +18,74 @@ export function BillReminder() {
   const [isBuzzing, setIsBuzzing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [urgencyLevel, setUrgencyLevel] = useState(60);
-  const [timeRemaining, setTimeRemaining] = useState(7 * 60); // 7 minutes in seconds
+  const [urgencyLevel, setUrgencyLevel] = useState(40); // Starting at a lower urgency
+  const [timeRemaining, setTimeRemaining] = useState(10 * 60); // 10 minutes in seconds
+  const [reminderPaused, setReminderPaused] = useState(false);
   const [isFirstReminder, setIsFirstReminder] = useState(true);
   const timerRef = useRef<number | null>(null);
   const { toast } = useToast();
 
-  // Activate sensory feedback - light flashing and vibration
+  // Activate sensory feedback - milder light changes, no vibration by default
   useEffect(() => {
-    // Light feedback - flash the background color
     let intervalId: number | null = null;
     
-    if (open) {
-      // Start the vibration if supported
-      if ('vibrate' in navigator) {
-        // First reminder: 5 buzzes
-        if (isFirstReminder) {
-          navigator.vibrate([300, 100, 300, 100, 300, 100, 300, 100, 300]);
-        } else {
-          // Second reminder: 7 buzzes (more urgent)
-          navigator.vibrate([300, 100, 300, 100, 300, 100, 300, 100, 300, 100, 300, 100, 300]);
-        }
+    if (open && !reminderPaused) {
+      // Gentler visual indication - only flash every 30 seconds
+      const flashInterval = setInterval(() => {
+        setIsBuzzing(true);
+        setTimeout(() => setIsBuzzing(false), 1000);
+      }, 30000);
+      
+      // Optional vibration only for second phase - single gentle buzz
+      if (!isFirstReminder && 'vibrate' in navigator) {
+        navigator.vibrate([200]);
       }
       
-      // Start the light flashing
-      setIsBuzzing(true);
-      
-      // Increase urgency over time
+      // Increase urgency over time, but more gradually
       const urgencyInterval = setInterval(() => {
         setUrgencyLevel(prev => {
-          if (prev < 95) return prev + 5;
+          if (prev < 90) return prev + 2;
           return prev;
         });
-      }, 10000); // Every 10 seconds
+      }, 20000); // Every 20 seconds
       
       return () => {
-        // Stop vibration when component unmounts
         if ('vibrate' in navigator) {
-          navigator.vibrate(0); // Stop vibration
+          navigator.vibrate(0);
         }
         setIsBuzzing(false);
-        if (intervalId) clearInterval(intervalId);
+        clearInterval(flashInterval);
         clearInterval(urgencyInterval);
       };
     }
-  }, [open, isFirstReminder]);
+  }, [open, isFirstReminder, reminderPaused]);
 
-  // Timer effect
+  // Timer effect - with pause functionality
   useEffect(() => {
-    if (open && timeRemaining > 0) {
+    if (open && timeRemaining > 0 && !reminderPaused) {
       timerRef.current = window.setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
             // Time's up, trigger the next phase
             if (isFirstReminder) {
-              // Switch to second reminder phase with 5 minutes
+              // Switch to second reminder phase with 8 minutes
               setIsFirstReminder(false);
-              setUrgencyLevel(85); // Increase urgency
-              
-              // Flash more intensely
-              setIsBuzzing(false);
-              setTimeout(() => setIsBuzzing(true), 50);
+              setUrgencyLevel(60); // Moderate urgency increase
               
               // Show toast
               toast({
-                title: "Time's up!",
-                description: "Your situation is becoming critical! Please take action now.",
-                variant: "destructive"
+                title: "Reminder",
+                description: "Your bill still needs attention. Please take action when convenient.",
+                variant: "default" // Less alarming variant
               });
               
-              return 5 * 60; // Reset to 5 minutes
+              return 8 * 60; // 8 minutes for second phase
             } else {
-              // Final warning
-              if ('vibrate' in navigator) {
-                // Very long intense vibration for final warning
-                navigator.vibrate([800, 200, 800, 200, 800, 200, 800]);
-              }
-              
+              // Final reminder - not as critical
               toast({
-                title: "CRITICAL WARNING!",
-                description: "You are at risk of service disconnection!",
-                variant: "destructive"
+                title: "Final Reminder",
+                description: "Please address your electricity bill soon.",
+                variant: "default"
               });
               
               return 0;
@@ -114,7 +101,7 @@ export function BillReminder() {
         clearInterval(timerRef.current);
       }
     };
-  }, [open, timeRemaining, isFirstReminder, toast]);
+  }, [open, timeRemaining, isFirstReminder, reminderPaused, toast]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -133,7 +120,7 @@ export function BillReminder() {
       toast({
         title: "No file selected",
         description: "Please select your electricity bill receipt to upload",
-        variant: "destructive"
+        variant: "default"
       });
       return;
     }
@@ -150,7 +137,7 @@ export function BillReminder() {
         description: "Your electricity bill receipt has been filed for future reference",
       });
       
-      // Stop vibration
+      // Stop any ongoing effects
       if ('vibrate' in navigator) {
         navigator.vibrate(0);
       }
@@ -165,7 +152,7 @@ export function BillReminder() {
   const handlePay = () => {
     setOpen(false);
     
-    // Stop vibration
+    // Stop any ongoing effects
     if ('vibrate' in navigator) {
       navigator.vibrate(0);
     }
@@ -185,43 +172,77 @@ export function BillReminder() {
     // window.location.href = "https://payment-provider.com";
   };
 
+  const togglePause = () => {
+    setReminderPaused(prev => !prev);
+    
+    if (!reminderPaused) {
+      // User is pausing the reminder
+      toast({
+        title: "Reminder paused",
+        description: "Take your time to handle this task. Resume when you're ready.",
+      });
+      
+      // Stop any vibration
+      if ('vibrate' in navigator) {
+        navigator.vibrate(0);
+      }
+    } else {
+      // User is resuming
+      toast({
+        title: "Reminder resumed",
+        description: "Thank you for coming back to this task.",
+      });
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent 
           className={`sm:max-w-md ${isBuzzing ? 'animate-pulse' : ''}`} 
           style={{
-            boxShadow: isBuzzing ? '0 0 15px 5px rgba(255, 0, 0, 0.7)' : 'none',
+            boxShadow: isBuzzing ? '0 0 10px 3px rgba(249, 115, 22, 0.5)' : 'none', // Softer orange glow
           }}
         >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
+            <DialogTitle className="flex items-center gap-2 text-orange-500"> {/* Changed from destructive to orange */}
               <AlertTriangle className="h-5 w-5" />
-              Urgent: Electricity Bill Action Required
+              Reminder: Electricity Bill Action Needed
             </DialogTitle>
             <DialogDescription>
-              Your electricity bill requires immediate attention. Either payment is due, or we need your receipt for filing.
+              Your electricity bill requires attention. Please submit payment or upload your receipt when convenient.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div className="flex items-center gap-2 text-orange-500">
-              <Zap className="h-5 w-5" />
-              <span className="text-sm font-medium">Urgency Level:</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-orange-500">
+                <Zap className="h-5 w-5" />
+                <span className="text-sm font-medium">Priority Level:</span>
+              </div>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={togglePause}
+                className="text-xs"
+              >
+                {reminderPaused ? "Resume Reminder" : "Pause Reminder"}
+              </Button>
             </div>
+            
             <Progress value={urgencyLevel} className="h-2 bg-gray-200" 
               style={{
-                '--progress-background': urgencyLevel > 80 ? 'rgb(220, 38, 38)' : 'rgb(249, 115, 22)',
+                '--progress-background': urgencyLevel > 70 ? 'rgb(249, 115, 22)' : 'rgb(234, 179, 8)',
               } as React.CSSProperties}
             />
             
             <div className="flex items-center justify-between mt-3 p-2 border border-orange-200 rounded-md bg-orange-50">
               <div className="flex items-center gap-2">
-                <Clock className={`h-5 w-5 ${timeRemaining < 60 ? 'text-red-600' : 'text-orange-500'}`} />
-                <span className="text-sm font-medium">Time Remaining:</span>
+                <Clock className="h-5 w-5 text-orange-500" />
+                <span className="text-sm font-medium">Time Available:</span>
               </div>
-              <div className={`font-mono text-lg font-bold ${timeRemaining < 60 ? 'text-red-600 animate-pulse' : 'text-orange-600'}`}>
-                {formatTime(timeRemaining)}
+              <div className={`font-mono text-lg font-bold text-orange-600 ${reminderPaused ? 'opacity-50' : ''}`}>
+                {reminderPaused ? "Paused" : formatTime(timeRemaining)}
               </div>
             </div>
             
@@ -251,7 +272,7 @@ export function BillReminder() {
               onClick={() => setOpen(false)}
               className="sm:w-auto w-full order-3 sm:order-1"
             >
-              Dismiss (Not Recommended)
+              Remind Me Later
             </Button>
             <Button 
               onClick={handlePay}
