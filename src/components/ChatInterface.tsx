@@ -16,7 +16,7 @@ export const ChatInterface = () => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi there! 👋 I'm Bridge, your AI coach in the Dynamic Bridge ADHD program. I'm here to help you overcome procrastination and boost your productivity. I understand the unique challenges that come with ADHD and I'm here to support you in a way that's understanding and nonjudgmental.\n\nWhat productivity or focus challenges are you facing today? Or type /commands to see what I can help you with!"
+      content: "Welcome to Dynamic Bridge: Your Holistic ADHD Growth Partner 🌈\n\nI'm your comprehensive support system, designed to address ADHD challenges through an integrated, compassionate approach. We'll explore cognitive strategies, emotional wellness, and personalized growth techniques.\n\nWhat aspect of your journey would you like to focus on today? Type /commands to discover our holistic support paths."
     }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -50,15 +50,15 @@ export const ChatInterface = () => {
       const userInput = userMessage.content.toLowerCase();
 
       if (userInput === "/commands") {
-        response.content = "Here are all the available commands:\n\n" +
-          "- /commands – Lists all available commands\n" +
-          "- /start – Begin the structured 8-step guided process\n" +
-          "- /learn – Explore procrastination psychology\n" +
-          "- /visualize – Imagine a focused, productive future\n" +
-          "- /commit – Set personalized goals and action steps\n" +
-          "- /relax – Use mindfulness and relaxation techniques\n" +
-          "- /Tracy – Find the perfect Tracy for your needs\n\n" +
-          "What would you like to explore today?";
+        response.content = "Dynamic Bridge Holistic Support Commands:\n\n" +
+          "- /commands – Explore our holistic support paths\n" +
+          "- /start – Begin our comprehensive 8-step neurodivergent growth process\n" +
+          "- /learn – Deep dive into ADHD neuroscience and adaptive strategies\n" +
+          "- /visualize – Create empowering cognitive landscapes\n" +
+          "- /commit – Design personalized growth and wellness goals\n" +
+          "- /mindful – Integrated cognitive and emotional wellness tools\n" +
+          "- /energize – Optimize motivation and personal energy management\n\n" +
+          "Which path resonates with your growth journey today?";
       } else if (userInput === "/start") {
         response.content = "Welcome to your guided journey to overcome procrastination! We'll work through 8 steps together:\n\n" +
           "1. First, let's assess your current situation. What specific tasks do you find yourself procrastinating on the most?";

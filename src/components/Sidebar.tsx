@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command } from "lucide-react";
+import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command, Brain, Zap, Mindmap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface SidebarProps {
@@ -9,17 +10,18 @@ interface SidebarProps {
 export const Sidebar = ({ onClose }: SidebarProps) => {
   const commands = [
     { name: "/commands", icon: <Command className="h-4 w-4 mr-2" />, description: "Lists all available commands" },
-    { name: "/start", icon: <Target className="h-4 w-4 mr-2" />, description: "Begin the 8-step guided process" },
-    { name: "/learn", icon: <BookOpen className="h-4 w-4 mr-2" />, description: "Explore procrastination psychology" },
-    { name: "/visualize", icon: <Sparkles className="h-4 w-4 mr-2" />, description: "Imagine a productive future" },
-    { name: "/commit", icon: <ThumbsUp className="h-4 w-4 mr-2" />, description: "Set goals and action steps" },
-    { name: "/relax", icon: <HeartHandshake className="h-4 w-4 mr-2" />, description: "Mindfulness techniques" }
+    { name: "/start", icon: <Target className="h-4 w-4 mr-2" />, description: "Begin holistic 8-step ADHD growth process" },
+    { name: "/learn", icon: <Brain className="h-4 w-4 mr-2" />, description: "Explore ADHD neuroscience and strategies" },
+    { name: "/visualize", icon: <Sparkles className="h-4 w-4 mr-2" />, description: "Create empowering mental landscapes" },
+    { name: "/commit", icon: <ThumbsUp className="h-4 w-4 mr-2" />, description: "Set personalized growth goals" },
+    { name: "/mindful", icon: <Mindmap className="h-4 w-4 mr-2" />, description: "Holistic cognitive and emotional tools" },
+    { name: "/energize", icon: <Zap className="h-4 w-4 mr-2" />, description: "Optimize energy and motivation" }
   ];
 
   return (
     <div className="h-full flex flex-col p-4">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-sidebar-foreground">Bridge.it</h2>
+        <h2 className="text-xl font-bold text-sidebar-foreground">Dynamic Bridge</h2>
         <Button variant="ghost" size="icon" onClick={onClose} className="md:hidden">
           <X className="h-5 w-5" />
         </Button>
@@ -29,8 +31,9 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
         <div className="flex items-start gap-2 text-sidebar-accent-foreground">
           <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
           <p className="text-sm">
-            I'm Bridge, your AI companion in the Dynamic Bridge ADHD program. 
-            I'm here to help you navigate challenges with focus, time management, and goal achievement.
+            Welcome to Dynamic Bridge: A holistic ADHD support ecosystem. 
+            We integrate neuroscience, psychology, and personalized strategies 
+            to empower your unique cognitive journey.
           </p>
         </div>
       </div>
@@ -38,7 +41,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
       <Separator className="my-4" />
 
       <div className="space-y-1">
-        <h3 className="font-medium text-sm text-sidebar-foreground/70 px-2 mb-2">Available Commands</h3>
+        <h3 className="font-medium text-sm text-sidebar-foreground/70 px-2 mb-2">Holistic Growth Commands</h3>
         {commands.map((command) => (
           <Button
             key={command.name}
@@ -57,14 +60,14 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
       <div className="mt-auto">
         <Separator className="my-4" />
         <div className="px-2 py-2 bg-sidebar-accent/50 rounded-lg">
-          <p className="text-xs text-sidebar-foreground/70 mb-2">Part of the Dynamic Bridge ADHD Program</p>
+          <p className="text-xs text-sidebar-foreground/70 mb-2">Holistic ADHD Growth Ecosystem</p>
           <a 
             href="https://dynamicbridge.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-primary underline decoration-dotted hover:decoration-solid"
           >
-            Explore Dynamic Bridge Support Tools
+            Explore Dynamic Bridge Holistic Support
           </a>
         </div>
       </div>
