@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -30,7 +29,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
         <div className="flex items-start gap-2 text-sidebar-accent-foreground">
           <Info className="h-5 w-5 mt-0.5 flex-shrink-0" />
           <p className="text-sm">
-            I'm Bridge, your AI companion for overcoming procrastination and building productive habits. 
+            I'm Bridge, your AI companion in the Dynamic Bridge ADHD program. 
             I'm here to help you navigate challenges with focus, time management, and goal achievement.
           </p>
         </div>
@@ -58,18 +57,17 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
       <div className="mt-auto">
         <Separator className="my-4" />
         <div className="px-2 py-2 bg-sidebar-accent/50 rounded-lg">
-          <p className="text-xs text-sidebar-foreground/70 mb-2">Part of the Tracy Suite</p>
+          <p className="text-xs text-sidebar-foreground/70 mb-2">Part of the Dynamic Bridge ADHD Program</p>
           <a 
-            href="https://chatgpt.com/g/g-67b45f1a14648191ab1cf087c2592edc-the-tracy-suite"
+            href="https://dynamicbridge.com"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-primary underline decoration-dotted hover:decoration-solid"
           >
-            Find the perfect Tracy for your needs
+            Explore Dynamic Bridge Support Tools
           </a>
         </div>
       </div>
     </div>
   );
 };
-

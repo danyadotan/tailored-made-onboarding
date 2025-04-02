@@ -16,14 +16,13 @@ export const ChatInterface = () => {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi there! 👋 I'm Bridge, your AI coach and thoughtful friend, here to help you overcome procrastination and boost your productivity. I understand the unique challenges that come with ADHD and I'm here to support you in a way that's understanding and nonjudgmental.\n\nWhat productivity or focus challenges are you facing today? Or type /commands to see what I can help you with!"
+      content: "Hi there! 👋 I'm Bridge, your AI coach in the Dynamic Bridge ADHD program. I'm here to help you overcome procrastination and boost your productivity. I understand the unique challenges that come with ADHD and I'm here to support you in a way that's understanding and nonjudgmental.\n\nWhat productivity or focus challenges are you facing today? Or type /commands to see what I can help you with!"
     }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Auto-scroll to the bottom of the chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -32,7 +31,6 @@ export const ChatInterface = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Add user message
     const userMessage = {
       id: Date.now().toString(),
       role: "user" as const,
@@ -42,7 +40,6 @@ export const ChatInterface = () => {
     setInput("");
     setIsProcessing(true);
 
-    // Process commands or simulate AI response
     setTimeout(() => {
       let response: Message = {
         id: (Date.now() + 1).toString(),
@@ -91,13 +88,11 @@ export const ChatInterface = () => {
           "4. Repeat 3 more times\n\n" +
           "How do you feel? Remember, you can use this simple technique anytime you feel resistance to starting a task.";
       } else if (userInput === "/tracy") {
-        response.content = "Bridge.it is part of the Tracy Suite that offers specialized AI companions for different needs:\n\n" +
-          "• Bridge.it - Your productivity and procrastination coach\n" +
-          "• Tracy Career Coach - For career development and job searching\n" +
-          "• Tracy Mindfulness Coach - For stress management and emotional wellbeing\n\n" +
-          "You can explore the entire Tracy Suite here: https://chatgpt.com/g/g-67b45f1a14648191ab1cf087c2592edc-the-tracy-suite";
+        response.content = "Bridge.it is part of the Dynamic Bridge ADHD program, offering specialized support:\n\n" +
+          "• Bridge.it - Productivity and procrastination coaching\n" +
+          "• Other Dynamic Bridge tools - Career development, mindfulness, and emotional wellbeing\n\n" +
+          "Learn more about the Dynamic Bridge program at: https://dynamicbridge.com";
       } else {
-        // Generic response for non-command inputs
         response.content = "Thank you for sharing that with me. Understanding your unique situation helps me provide better support.\n\n" +
           "Would you like to:\n" +
           "1. Explore specific strategies to overcome this challenge?\n" +
@@ -121,7 +116,6 @@ export const ChatInterface = () => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Chat Messages */}
       <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           {messages.map((message) => (
@@ -148,7 +142,6 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Command Suggestions */}
       <div className="px-4 md:px-6 py-2 bg-accent/10">
         <div className="max-w-4xl mx-auto flex flex-wrap gap-2">
           <span className="text-xs text-muted-foreground pt-1.5">Quick commands:</span>
@@ -166,7 +159,6 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Chat Input */}
       <div className="p-4 md:p-6 border-t">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex gap-2">
