@@ -1,21 +1,15 @@
 
 import { useState, useRef, useEffect } from "react";
 import { BillReminder } from "@/components/BillReminder";
-import { supabase } from "@/integrations/supabase/client";
 import { MessageBubble } from "@/components/chat/MessageBubble";
 import { CommandButtons } from "@/components/chat/CommandButtons";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { ADHDProfile, Message } from "@/types/chat";
 import { generateResponse } from "@/utils/responseGenerator";
+import { saveMessageToSupabase, getMessagesFromSupabase } from "@/services/messageService";
 
 export const ChatInterface = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: "ברוך הבא ל-Bridge-IT: שותף להתמודדות עם ADHD 🌈\n\nאני מערכת תמיכה מקיפה, שנועדה לגשר על פערים קוגניטיביים ולהפחית את התחלואה הנלווית ל-ADHD. אנחנו נעבוד יחד על אסטרטגיות קוגניטיביות, רווחה רגשית, וטכניקות צמיחה מותאמות אישית.\n\nעל איזה היבט בהתמודדות שלך תרצה להתמקד היום? הקלד /commands כדי לגלות את מסלולי התמיכה ההוליסטיים שלנו."
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showBillReminder, setShowBillReminder] = useState(true);
   const [userProfile, setUserProfile] = useState<ADHDProfile>({
@@ -30,25 +24,31 @@ export const ChatInterface = () => {
   
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Load messages from Supabase on component mount
+  useEffect(() => {
+    const loadMessages = async () => {
+      const savedMessages = await getMessagesFromSupabase();
+      
+      // If no messages found, add welcome message
+      if (savedMessages.length === 0) {
+        const welcomeMessage: Message = {
+          id: "welcome",
+          role: "assistant",
+          content: "ברוך הבא ל-Bridge-IT: שותף להתמודדות עם ADHD 🌈\n\nאני מערכת תמיכה מקיפה, שנועדה לגשר על פערים קוגניטיביים ולהפחית את התחלואה הנלווית ל-ADHD. אנחנו נעבוד יחד על אסטרטגיות קוגניטיביות, רווחה רגשית, וטכניקות צמיחה מותאמות אישית.\n\nעל איזה היבט בהתמודדות שלך תרצה להתמקד היום? הקלד /commands כדי לגלות את מסלולי התמיכה ההוליסטיים שלנו."
+        };
+        setMessages([welcomeMessage]);
+        await saveMessageToSupabase(welcomeMessage);
+      } else {
+        setMessages(savedMessages);
+      }
+    };
+    
+    loadMessages();
+  }, []);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const saveMessageToSupabase = async (message: Message) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // We're still using todos table since we're having issues with the messages table
-        await supabase.from('todos').insert({
-          user_id: user.id,
-          title: `Chat: ${message.role}`,
-          description: message.content
-        });
-      }
-    } catch (error) {
-      console.error("Error saving message:", error);
-    }
-  };
 
   const handleMessageSubmit = async (content: string) => {
     const userMessage: Message = {
