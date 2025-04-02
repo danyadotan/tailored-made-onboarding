@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command, Brain, Zap, Mindmap } from "lucide-react";
+import { X, Info, BookOpen, Target, Sparkles, ThumbsUp, HeartHandshake, Command, Brain, Zap, Lightbulb } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 interface SidebarProps {
@@ -14,7 +14,7 @@ export const Sidebar = ({ onClose }: SidebarProps) => {
     { name: "/learn", icon: <Brain className="h-4 w-4 mr-2" />, description: "Explore ADHD neuroscience and strategies" },
     { name: "/visualize", icon: <Sparkles className="h-4 w-4 mr-2" />, description: "Create empowering mental landscapes" },
     { name: "/commit", icon: <ThumbsUp className="h-4 w-4 mr-2" />, description: "Set personalized growth goals" },
-    { name: "/mindful", icon: <Mindmap className="h-4 w-4 mr-2" />, description: "Holistic cognitive and emotional tools" },
+    { name: "/mindful", icon: <Lightbulb className="h-4 w-4 mr-2" />, description: "Holistic cognitive and emotional tools" },
     { name: "/energize", icon: <Zap className="h-4 w-4 mr-2" />, description: "Optimize energy and motivation" }
   ];
 
