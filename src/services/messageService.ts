@@ -35,7 +35,7 @@ export const getMessagesFromSupabase = async () => {
       // Transform the Supabase data to match our Message type
       return data.map((item) => ({
         id: item.id,
-        role: item.role,
+        role: item.role as "user" | "assistant" | "system",
         content: item.content
       }));
     }
