@@ -83,6 +83,37 @@
     --sidebar-border: 260 20% 30%;
     --sidebar-ring: 260 30% 65%;
   }
+
+  /* Bridge-IT Theme based on logo */
+  .bridge-it-theme {
+    --background: 223 100% 50%;
+    --foreground: 0 0% 100%;
+    
+    --card: 223 90% 55%;
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 223 90% 55%;
+    --popover-foreground: 0 0% 100%;
+    
+    --primary: 337 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 223 100% 60%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 223 60% 70%;
+    --muted-foreground: 0 0% 100%;
+    
+    --accent: 337 100% 80%;
+    --accent-foreground: 337 100% 30%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 223 40% 70%;
+    --input: 223 40% 70%;
+    --ring: 337 100% 65%;
+  }
 }
 
 @layer base {
@@ -112,6 +143,93 @@
   }
 }
 
+/* Flash notification overlay */
+.flash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.flash-single {
+  animation: flash-single 0.5s ease-out forwards;
+}
+
+.flash-double {
+  animation: flash-double 1s ease-out forwards;
+}
+
+.flash-pulse {
+  animation: flash-pulse 1.5s ease-out forwards;
+}
+
+.flash-white {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.flash-blue {
+  background-color: rgba(0, 53, 255, 0.8);
+}
+
+.flash-pink {
+  background-color: rgba(255, 51, 102, 0.8);
+}
+
+.flash-rainbow {
+  background-image: linear-gradient(45deg, 
+    rgba(0, 53, 255, 0.8), 
+    rgba(255, 51, 102, 0.8), 
+    rgba(255, 204, 0, 0.8));
+  background-size: 600% 600%;
+  animation: flash-rainbow 2s ease-out forwards;
+}
+
+@keyframes flash-single {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes flash-double {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  40% { opacity: 0; }
+  60% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes flash-pulse {
+  0% { opacity: 0; }
+  10% { opacity: 0.8; }
+  20% { opacity: 0.4; }
+  30% { opacity: 0.8; }
+  40% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  60% { opacity: 0.4; }
+  100% { opacity: 0; }
+}
+
+@keyframes flash-rainbow {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+    background-position: 100% 50%;
+  }
+  100% {
+    opacity: 0;
+    background-position: 100% 50%;
+  }
+}
+
 /* Reduce motion when preference is set */
 .reduce-motion * {
   @apply transition-none animate-none;
@@ -124,6 +242,47 @@
 
 [dir="rtl"] .assistant-bubble {
   @apply ml-auto mr-0 rounded-tl-2xl rounded-tr-none;
+}
+
+/* Bridge-IT specific styles */
+.bridge-it-logo {
+  font-family: 'Arial', sans-serif;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.bridge-it-subtitle {
+  font-family: 'Arial', sans-serif;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.bridge-it-icon {
+  position: relative;
+}
+
+.bridge-it-icon::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: white;
+  border-radius: 50%;
+  top: -5px;
+  right: -5px;
+  box-shadow: 0 0 10px 2px white;
+  animation: twinkle 2s infinite;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
 }
 
 /* Color schemes */
@@ -147,6 +306,20 @@
   --muted-foreground: 0 0% 40%;
 }
 
+[data-color-scheme="bridge-it"] {
+  --primary: 337 100% 65%;
+  --background: 223 100% 50%;
+  --foreground: 0 0% 100%;
+  --secondary: 223 100% 60%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 223 60% 70%;
+  --muted-foreground: 0 0% 100%;
+  --accent: 337 100% 80%;
+  --accent-foreground: 337 100% 30%;
+  --card: 223 90% 55%;
+  --card-foreground: 0 0% 100%;
+}
+
 /* Glassmorphism and gradients */
 .glass-card {
   @apply bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/20 dark:border-gray-700/20;
@@ -154,4 +327,8 @@
 
 .bg-gradient-primary {
   @apply bg-gradient-to-br from-purple-200 to-indigo-100 dark:from-purple-900/40 dark:to-indigo-900/20;
+}
+
+.bg-gradient-bridge-it {
+  background: linear-gradient(to right bottom, #0035ff, #0035ff, #ff3366);
 }

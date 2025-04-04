@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Language } from "lucide-react";
+import { Languages } from "lucide-react";
 import { updateLanguage } from "@/services/profileService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -48,7 +48,7 @@ export const LanguageToggle = ({ currentLanguage, onLanguageChange }: LanguageTo
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
-          <Language className="h-5 w-5" />
+          <Languages className="h-5 w-5" />
           <span className="sr-only">Toggle language</span>
         </Button>
       </DropdownMenuTrigger>

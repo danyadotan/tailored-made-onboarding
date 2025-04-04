@@ -18,8 +18,12 @@ export type SensoryPreferences = {
   contrast: number; // 0-100
   motion_sensitivity: boolean;
   sound_enabled: boolean;
-  notification_style: "visual" | "audio" | "both";
-  color_scheme: "default" | "high-contrast" | "muted";
+  notification_style: "visual" | "audio" | "haptic" | "flash" | "both";
+  color_scheme: "default" | "high-contrast" | "muted" | "bridge-it";
+  notification_timing: "immediate" | "scheduled" | "batched";
+  haptic_intensity: "low" | "medium" | "high";
+  flash_pattern: "single" | "double" | "pulse";
+  flash_color: "white" | "blue" | "pink" | "rainbow";
 };
 
 export const getProfileFromSupabase = async (): Promise<Profile | null> => {
@@ -38,13 +42,39 @@ export const getProfileFromSupabase = async (): Promise<Profile | null> => {
         return null;
       }
       
-      return data as Profile;
+      // Type conversion to ensure all required Profile fields are present
+      const profile: Profile = {
+        id: data.id,
+        username: data.username || null,
+        full_name: data.full_name || null,
+        avatar_url: data.avatar_url || null,
+        sensory_preferences: data.sensory_preferences || defaultSensoryPreferences,
+        onboarding_completed: data.onboarding_completed || false,
+        terms_accepted: data.terms_accepted || false,
+        terms_accepted_at: data.terms_accepted_at || null,
+        language: data.language || "en"
+      };
+      
+      return profile;
     }
     return null;
   } catch (error) {
     console.error("Error fetching profile:", error);
     return null;
   }
+};
+
+export const defaultSensoryPreferences: SensoryPreferences = {
+  brightness: 100,
+  contrast: 100,
+  motion_sensitivity: false,
+  sound_enabled: true,
+  notification_style: "visual",
+  color_scheme: "default",
+  notification_timing: "immediate",
+  haptic_intensity: "medium",
+  flash_pattern: "single",
+  flash_color: "white"
 };
 
 export const updateProfileInSupabase = async (updates: Partial<Profile>): Promise<boolean> => {
