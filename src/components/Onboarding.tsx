@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { updateProfileInSupabase, SensoryPreferences, Profile } from "@/services/profileService";
+import { updateProfileInSupabase, SensoryPreferences, Profile, defaultSensoryPreferences } from "@/services/profileService";
 import { TermsAndWaiver } from "@/components/TermsAndWaiver";
 import { SensorySettings } from "@/components/SensorySettings";
 import { CheckCircle, ArrowRight, ArrowLeft } from "lucide-react";
@@ -21,14 +20,7 @@ export const Onboarding = ({ onComplete }: OnboardingProps) => {
   const [profile, setProfile] = useState<Partial<Profile>>({
     username: "",
     full_name: "",
-    sensory_preferences: {
-      brightness: 100,
-      contrast: 100,
-      motion_sensitivity: false,
-      sound_enabled: true,
-      notification_style: "visual",
-      color_scheme: "default"
-    }
+    sensory_preferences: defaultSensoryPreferences
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();

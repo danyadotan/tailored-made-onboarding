@@ -5,16 +5,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getProfileFromSupabase, Profile } from "@/services/profileService";
+import { getProfileFromSupabase, Profile as UserProfile } from "@/services/profileService";
 import Index from "./pages/Index";
 import Games from "./pages/Games";
 import NotFound from "./pages/NotFound";
-import Profile from "./pages/Profile";
+import ProfilePage from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   
   // Load profile on app start
   useEffect(() => {
@@ -74,7 +74,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/games" element={<Games />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile" element={<ProfilePage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
