@@ -6,7 +6,14 @@ import { CommandButtons } from "@/components/chat/CommandButtons";
 import { MessageInput } from "@/components/chat/MessageInput";
 import { ADHDProfile, Message } from "@/types/chat";
 import { generateResponse } from "@/utils/responseGenerator";
-import { saveMessageToSupabase, getMessagesFromSupabase } from "@/services/messageService";
+import { 
+  saveMessageToSupabase, 
+  getMessagesFromSupabase, 
+  deleteMessageFromSupabase,
+  updateMessageInSupabase,
+  setupRealtimeMessages
+} from "@/services/messageService";
+import { useToast } from "@/hooks/use-toast";
 
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -23,6 +30,7 @@ export const ChatInterface = () => {
   });
   
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   // Load messages from Supabase on component mount
   useEffect(() => {
@@ -44,6 +52,21 @@ export const ChatInterface = () => {
     };
     
     loadMessages();
+  }, []);
+
+  // Setup realtime listener for new messages
+  useEffect(() => {
+    const cleanup = setupRealtimeMessages((newMessage) => {
+      setMessages((prevMessages) => {
+        // Check if this message is already in our state
+        if (!prevMessages.find(m => m.id === newMessage.id)) {
+          return [...prevMessages, newMessage];
+        }
+        return prevMessages;
+      });
+    });
+    
+    return cleanup;
   }, []);
 
   useEffect(() => {
@@ -86,6 +109,44 @@ export const ChatInterface = () => {
     handleMessageSubmit(command);
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    const success = await deleteMessageFromSupabase(messageId);
+    if (success) {
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      toast({
+        title: "ההודעה נמחקה",
+        description: "ההודעה נמחקה בהצלחה",
+      });
+    } else {
+      toast({
+        title: "שגיאה במחיקת הודעה",
+        description: "לא ניתן היה למחוק את ההודעה, נסה שוב מאוחר יותר",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditMessage = async (messageId: string, newContent: string) => {
+    const success = await updateMessageInSupabase(messageId, newContent);
+    if (success) {
+      setMessages((prev) => 
+        prev.map((msg) => 
+          msg.id === messageId ? { ...msg, content: newContent } : msg
+        )
+      );
+      toast({
+        title: "ההודעה עודכנה",
+        description: "ההודעה עודכנה בהצלחה",
+      });
+    } else {
+      toast({
+        title: "שגיאה בעדכון הודעה",
+        description: "לא ניתן היה לעדכן את ההודעה, נסה שוב מאוחר יותר",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {showBillReminder && <BillReminder />}
@@ -93,7 +154,12 @@ export const ChatInterface = () => {
       <div className="flex-1 overflow-auto p-4 md:p-6 bg-gradient-to-b from-background to-background/80">
         <div className="max-w-4xl mx-auto">
           {messages.map((message) => (
-            <MessageBubble key={message.id} message={message} />
+            <MessageBubble 
+              key={message.id} 
+              message={message}
+              onDelete={message.role === "user" ? handleDeleteMessage : undefined}
+              onEdit={message.role === "user" ? handleEditMessage : undefined}
+            />
           ))}
           {isProcessing && <MessageBubble isLoading />}
           <div ref={chatEndRef} />

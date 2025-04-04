@@ -45,3 +45,60 @@ export const getMessagesFromSupabase = async () => {
     return [];
   }
 };
+
+export const deleteMessageFromSupabase = async (messageId: string) => {
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId);
+      
+    if (error) {
+      console.error("Error deleting message:", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    return false;
+  }
+};
+
+export const updateMessageInSupabase = async (messageId: string, content: string) => {
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .update({ content, updated_at: new Date().toISOString() })
+      .eq('id', messageId);
+      
+    if (error) {
+      console.error("Error updating message:", error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error("Error updating message:", error);
+    return false;
+  }
+};
+
+export const setupRealtimeMessages = (onNewMessage: (message: Message) => void) => {
+  const channel = supabase
+    .channel('messages-changes')
+    .on('postgres_changes', 
+      { event: 'INSERT', schema: 'public', table: 'messages' },
+      (payload) => {
+        const newMessage = {
+          id: payload.new.id,
+          role: payload.new.role as "user" | "assistant" | "system",
+          content: payload.new.content
+        };
+        onNewMessage(newMessage);
+      }
+    )
+    .subscribe();
+    
+  return () => {
+    supabase.removeChannel(channel);
+  };
+};
