@@ -13,7 +13,21 @@ import {
   updateMessageInSupabase,
   setupRealtimeMessages
 } from "@/services/messageService";
+import { getProfileFromSupabase, Profile } from "@/services/profileService";
 import { useToast } from "@/hooks/use-toast";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { Button } from "@/components/ui/button";
+import { Settings, User } from "lucide-react";
+import { Onboarding } from "@/components/Onboarding";
+import { SensorySettings } from "@/components/SensorySettings";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -28,13 +42,35 @@ export const ChatInterface = () => {
     optimalWorkPeriods: ["09:00-11:30", "16:00-18:30"],
     commonDistractions: ["social media", "email", "noise"]
   });
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [language, setLanguage] = useState<"en" | "he">("en");
   
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Load messages from Supabase on component mount
+  // Load profile and messages from Supabase on component mount
   useEffect(() => {
-    const loadMessages = async () => {
+    const loadProfileAndMessages = async () => {
+      // Load profile
+      const userProfile = await getProfileFromSupabase();
+      if (userProfile) {
+        setProfile(userProfile);
+        setLanguage(userProfile.language || "en");
+        
+        // Set HTML dir attribute for RTL support
+        document.documentElement.dir = userProfile.language === "he" ? "rtl" : "ltr";
+        
+        // Show onboarding if not completed
+        if (!userProfile.onboarding_completed) {
+          setShowOnboarding(true);
+        }
+      } else {
+        // No profile found, show onboarding
+        setShowOnboarding(true);
+      }
+      
+      // Load messages
       const savedMessages = await getMessagesFromSupabase();
       
       // If no messages found, add welcome message
@@ -42,7 +78,7 @@ export const ChatInterface = () => {
         const welcomeMessage: Message = {
           id: "welcome",
           role: "assistant",
-          content: "ברוך הבא ל-Bridge-IT: שותף להתמודדות עם ADHD 🌈\n\nאני מערכת תמיכה מקיפה, שנועדה לגשר על פערים קוגניטיביים ולהפחית את התחלואה הנלווית ל-ADHD. אנחנו נעבוד יחד על אסטרטגיות קוגניטיביות, רווחה רגשית, וטכניקות צמיחה מותאמות אישית.\n\nעל איזה היבט בהתמודדות שלך תרצה להתמקד היום? הקלד /commands כדי לגלות את מסלולי התמיכה ההוליסטיים שלנו."
+          content: "Welcome to Bridge-IT: Your ADHD Support Partner 🌈\n\nI'm a comprehensive support system designed to bridge cognitive gaps and reduce comorbidities associated with ADHD. We'll work together on cognitive strategies, emotional wellbeing, and personalized growth techniques.\n\nWhat aspect of your ADHD experience would you like to focus on today? Type /commands to discover our holistic support pathways."
         };
         setMessages([welcomeMessage]);
         await saveMessageToSupabase(welcomeMessage);
@@ -51,7 +87,7 @@ export const ChatInterface = () => {
       }
     };
     
-    loadMessages();
+    loadProfileAndMessages();
   }, []);
 
   // Setup realtime listener for new messages
@@ -69,6 +105,7 @@ export const ChatInterface = () => {
     return cleanup;
   }, []);
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -114,13 +151,13 @@ export const ChatInterface = () => {
     if (success) {
       setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
       toast({
-        title: "ההודעה נמחקה",
-        description: "ההודעה נמחקה בהצלחה",
+        title: "Message deleted",
+        description: "The message was successfully deleted",
       });
     } else {
       toast({
-        title: "שגיאה במחיקת הודעה",
-        description: "לא ניתן היה למחוק את ההודעה, נסה שוב מאוחר יותר",
+        title: "Error deleting message",
+        description: "Could not delete the message, please try again later",
         variant: "destructive",
       });
     }
@@ -135,23 +172,114 @@ export const ChatInterface = () => {
         )
       );
       toast({
-        title: "ההודעה עודכנה",
-        description: "ההודעה עודכנה בהצלחה",
+        title: "Message updated",
+        description: "The message was successfully updated",
       });
     } else {
       toast({
-        title: "שגיאה בעדכון הודעה",
-        description: "לא ניתן היה לעדכן את ההודעה, נסה שוב מאוחר יותר",
+        title: "Error updating message",
+        description: "Could not update the message, please try again later",
         variant: "destructive",
       });
     }
   };
+  
+  const handleLanguageChange = (newLanguage: "en" | "he") => {
+    setLanguage(newLanguage);
+  };
+  
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Reload profile after onboarding
+    getProfileFromSupabase().then(userProfile => {
+      if (userProfile) {
+        setProfile(userProfile);
+        setLanguage(userProfile.language || "en");
+      }
+    });
+  };
+  
+  if (showOnboarding) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gradient-to-b from-violet-50/50 to-indigo-50/50 dark:from-gray-900 dark:to-gray-950">
       {showBillReminder && <BillReminder />}
       
-      <div className="flex-1 overflow-auto p-4 md:p-6 bg-gradient-to-b from-background to-background/80">
+      <div className="flex items-center justify-between p-2 md:p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b">
+        <div className="flex items-center gap-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <User className="h-4 w-4 mr-2" />
+                {profile?.username || "Profile"}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle>Your Profile</SheetTitle>
+                <SheetDescription>
+                  View and edit your profile information
+                </SheetDescription>
+              </SheetHeader>
+              <div className="py-4">
+                {profile && (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium">Full Name</p>
+                      <p className="text-muted-foreground">{profile.full_name || "Not set"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Username</p>
+                      <p className="text-muted-foreground">{profile.username || "Not set"}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Account Status</p>
+                      <p className="text-muted-foreground">
+                        {profile.terms_accepted ? "Terms Accepted" : "Terms Not Accepted"}
+                      </p>
+                    </div>
+                    <Button variant="outline" className="w-full">
+                      Edit Profile
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      
+        <div className="flex items-center">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Settings</SheetTitle>
+                <SheetDescription>
+                  Customize your experience
+                </SheetDescription>
+              </SheetHeader>
+              <div className="py-4">
+                <SensorySettings 
+                  initialPreferences={profile?.sensory_preferences || undefined}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+          
+          <LanguageToggle 
+            currentLanguage={language} 
+            onLanguageChange={handleLanguageChange} 
+          />
+        </div>
+      </div>
+      
+      <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           {messages.map((message) => (
             <MessageBubble 
