@@ -42,12 +42,13 @@ export const getProfileFromSupabase = async (): Promise<Profile | null> => {
         return null;
       }
       
-      // Type conversion to ensure all required Profile fields are present
+      // Create a properly typed profile object with all required fields
       const profile: Profile = {
         id: data.id,
         username: data.username || null,
         full_name: data.full_name || null,
         avatar_url: data.avatar_url || null,
+        // Add missing fields with defaults if they don't exist in the database yet
         sensory_preferences: data.sensory_preferences || defaultSensoryPreferences,
         onboarding_completed: data.onboarding_completed || false,
         terms_accepted: data.terms_accepted || false,
