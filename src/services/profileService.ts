@@ -42,18 +42,20 @@ export const getProfileFromSupabase = async (): Promise<Profile | null> => {
         return null;
       }
       
-      // Create a properly typed profile object with all required fields
+      // Create a properly typed profile object
+      // Since the database doesn't have all the fields we need yet,
+      // we add default values for the missing fields
       const profile: Profile = {
         id: data.id,
         username: data.username || null,
         full_name: data.full_name || null,
         avatar_url: data.avatar_url || null,
-        // Add missing fields with defaults as they don't exist in the database yet
-        sensory_preferences: data.sensory_preferences || defaultSensoryPreferences,
-        onboarding_completed: data.onboarding_completed || false,
-        terms_accepted: data.terms_accepted || false,
-        terms_accepted_at: data.terms_accepted_at || null,
-        language: data.language || "en"
+        // The following fields don't exist in the database yet, so we use defaults
+        sensory_preferences: (data as any).sensory_preferences || defaultSensoryPreferences,
+        onboarding_completed: (data as any).onboarding_completed || false,
+        terms_accepted: (data as any).terms_accepted || false,
+        terms_accepted_at: (data as any).terms_accepted_at || null,
+        language: (data as any).language || "en"
       };
       
       return profile;
