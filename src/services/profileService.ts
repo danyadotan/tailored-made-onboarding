@@ -45,13 +45,25 @@ export const getProfileFromSupabase = async (): Promise<Profile | null> => {
       // Create a properly typed profile object
       // Since the database doesn't have all the fields we need yet,
       // we add default values for the missing fields
+      
+      // Try to get sensory preferences from localStorage (temporary until DB is updated)
+      let sensoryPrefs = defaultSensoryPreferences;
+      try {
+        const stored = localStorage.getItem('sensory_preferences');
+        if (stored) {
+          sensoryPrefs = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error("Error loading sensory preferences from localStorage:", e);
+      }
+      
       const profile: Profile = {
         id: data.id,
         username: data.username || null,
         full_name: data.full_name || null,
         avatar_url: data.avatar_url || null,
         // The following fields don't exist in the database yet, so we use defaults
-        sensory_preferences: (data as any).sensory_preferences || defaultSensoryPreferences,
+        sensory_preferences: sensoryPrefs,
         onboarding_completed: (data as any).onboarding_completed || false,
         terms_accepted: (data as any).terms_accepted || false,
         terms_accepted_at: (data as any).terms_accepted_at || null,
@@ -104,7 +116,14 @@ export const updateProfileInSupabase = async (updates: Partial<Profile>): Promis
 };
 
 export const updateSensoryPreferences = async (preferences: SensoryPreferences): Promise<boolean> => {
-  return updateProfileInSupabase({ sensory_preferences: preferences });
+  try {
+    // Temporarily store in localStorage until database schema is updated
+    localStorage.setItem('sensory_preferences', JSON.stringify(preferences));
+    return true;
+  } catch (error) {
+    console.error("Error saving sensory preferences:", error);
+    return false;
+  }
 };
 
 export const acceptTerms = async (): Promise<boolean> => {
