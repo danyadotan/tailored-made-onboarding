@@ -204,10 +204,17 @@ export const ChatInterface = () => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-b from-violet-50/50 to-indigo-50/50 dark:from-gray-900 dark:to-gray-950">
+    <div className="flex flex-col h-full bg-layered-deep relative overflow-hidden">
+      {/* Animated background accents */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl float-gentle"></div>
+        <div className="absolute bottom-32 right-20 w-96 h-96 bg-accent/8 rounded-full blur-3xl float-moderate"></div>
+        <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-secondary/6 rounded-full blur-2xl float-gentle" style={{animationDelay: '2s'}}></div>
+      </div>
+      
       {showBillReminder && <BillReminder />}
       
-      <div className="flex items-center justify-between p-2 md:p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b">
+      <div className="relative z-10 flex items-center justify-between p-2 md:p-4 card-depth-2 backdrop-blur-md border-b border-border/50">
         <div className="flex items-center gap-2">
           <Sheet>
             <SheetTrigger asChild>
@@ -279,8 +286,8 @@ export const ChatInterface = () => {
         </div>
       </div>
       
-      <div className="flex-1 overflow-auto p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
+      <div className="relative z-10 flex-1 overflow-auto p-4 md:p-6">
+        <div className="max-w-4xl mx-auto relative">
           {messages.map((message) => (
             <MessageBubble 
               key={message.id} 
