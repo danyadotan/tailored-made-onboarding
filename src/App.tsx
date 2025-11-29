@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { getProfileFromSupabase, Profile as UserProfile } from "@/services/profileService";
 import Index from "./pages/Index";
 import Games from "./pages/Games";
+import ExecutiveGame from "./pages/ExecutiveGame";
 import NotFound from "./pages/NotFound";
 import ProfilePage from "./pages/Profile";
 
@@ -74,6 +75,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/games" element={<Games />} />
+              <Route path="/games/executive" element={<ExecutiveGame />} />
               <Route path="/profile" element={<ProfilePage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
