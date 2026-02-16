@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { profileUpdateSchema, sensoryPreferencesSchema } from "@/lib/validationSchemas";
 
 export type Profile = {
   id: string;
@@ -94,6 +95,14 @@ export const defaultSensoryPreferences: SensoryPreferences = {
 
 export const updateProfileInSupabase = async (updates: Partial<Profile>): Promise<boolean> => {
   try {
+    // Validate profile fields if present
+    const fieldsToValidate: Record<string, unknown> = {};
+    if (updates.username !== undefined) fieldsToValidate.username = updates.username;
+    if (updates.full_name !== undefined) fieldsToValidate.full_name = updates.full_name;
+    if (Object.keys(fieldsToValidate).length > 0) {
+      profileUpdateSchema.partial().parse(fieldsToValidate);
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
@@ -117,8 +126,8 @@ export const updateProfileInSupabase = async (updates: Partial<Profile>): Promis
 
 export const updateSensoryPreferences = async (preferences: SensoryPreferences): Promise<boolean> => {
   try {
-    // Temporarily store in localStorage until database schema is updated
-    localStorage.setItem('sensory_preferences', JSON.stringify(preferences));
+    const validated = sensoryPreferencesSchema.parse(preferences);
+    localStorage.setItem('sensory_preferences', JSON.stringify(validated));
     return true;
   } catch (error) {
     console.error("Error saving sensory preferences:", error);

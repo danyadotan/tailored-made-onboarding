@@ -8,6 +8,7 @@ import { Check, FileText } from "lucide-react";
 import { acceptTerms } from "@/services/profileService";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { signatureSchema } from "@/lib/validationSchemas";
 
 interface TermsAndWaiverProps {
   onAccept: () => void;
@@ -20,10 +21,11 @@ export const TermsAndWaiver = ({ onAccept }: TermsAndWaiverProps) => {
   const { toast } = useToast();
 
   const handleAccept = async () => {
-    if (!acceptedTerms || !signature.trim()) {
+    const sigResult = signatureSchema.safeParse(signature);
+    if (!acceptedTerms || !sigResult.success) {
       toast({
         title: "Required fields",
-        description: "Please accept the terms and provide your signature.",
+        description: sigResult.success ? "Please accept the terms and provide your signature." : sigResult.error.errors[0]?.message || "Invalid signature.",
         variant: "destructive",
       });
       return;
@@ -108,6 +110,7 @@ export const TermsAndWaiver = ({ onAccept }: TermsAndWaiverProps) => {
               placeholder="Type your full name as your signature"
               value={signature}
               onChange={(e) => setSignature(e.target.value)}
+              maxLength={200}
             />
           </div>
         </div>
