@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getProfileFromSupabase, updateProfileInSupabase, Profile as ProfileType } from "@/services/profileService";
+import { profileUpdateSchema } from "@/lib/validationSchemas";
 import { SensorySettings } from "@/components/SensorySettings";
 import { TermsAndWaiver } from "@/components/TermsAndWaiver";
 import { useToast } from "@/hooks/use-toast";
@@ -44,11 +45,22 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const result = profileUpdateSchema.safeParse(formData);
+    if (!result.success) {
+      toast({
+        title: "Validation error",
+        description: result.error.errors[0]?.message || "Invalid input",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     const success = await updateProfileInSupabase({
-      username: formData.username,
-      full_name: formData.full_name
+      username: result.data.username,
+      full_name: result.data.full_name
     });
 
     if (success) {
@@ -134,6 +146,7 @@ const ProfilePage = () => {
                           value={formData.username}
                           onChange={handleInputChange}
                           placeholder="Enter your username"
+                          maxLength={50}
                         />
                       </div>
                       
@@ -145,6 +158,7 @@ const ProfilePage = () => {
                           value={formData.full_name}
                           onChange={handleInputChange}
                           placeholder="Enter your full name"
+                          maxLength={100}
                         />
                       </div>
                       

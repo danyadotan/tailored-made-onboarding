@@ -1,15 +1,16 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "@/types/chat";
+import { messageSchema } from "@/lib/validationSchemas";
 
 export const saveMessageToSupabase = async (message: Message) => {
   try {
+    const validated = messageSchema.parse({ content: message.content, role: message.role });
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       await supabase.from('messages').insert({
         user_id: user.id,
-        role: message.role,
-        content: message.content
+        role: validated.role,
+        content: validated.content
       });
     }
   } catch (error) {
@@ -66,9 +67,10 @@ export const deleteMessageFromSupabase = async (messageId: string) => {
 
 export const updateMessageInSupabase = async (messageId: string, content: string) => {
   try {
+    const validated = messageSchema.parse({ content, role: 'user' });
     const { error } = await supabase
       .from('messages')
-      .update({ content, updated_at: new Date().toISOString() })
+      .update({ content: validated.content, updated_at: new Date().toISOString() })
       .eq('id', messageId);
       
     if (error) {
