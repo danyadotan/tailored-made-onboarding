@@ -106,9 +106,10 @@ export const updateProfileInSupabase = async (updates: Partial<Profile>): Promis
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
+      // Cast needed: schema is missing sensory/onboarding fields until migration is applied
       const { error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(updates as Record<string, unknown>)
         .eq('id', user.id);
         
       if (error) {
